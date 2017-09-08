@@ -5,7 +5,7 @@ namespace Pim\Component\Catalog\Event;
 use Pim\Component\Catalog\Model\FamilyInterface;
 use Symfony\Component\EventDispatcher\Event;
 
-class DefineFamilyEvent extends Event
+class ChangedFamilyEvent extends Event
 {
     /** @var int */
     private $productId;

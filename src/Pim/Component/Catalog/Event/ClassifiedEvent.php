@@ -5,7 +5,7 @@ namespace Pim\Component\Catalog\Event;
 use Pim\Component\Catalog\Model\CategoryInterface;
 use Symfony\Component\EventDispatcher\Event;
 
-class ClassifyEvent extends Event
+class ClassifiedEvent extends Event
 {
     /** @var int */
     private $productId;

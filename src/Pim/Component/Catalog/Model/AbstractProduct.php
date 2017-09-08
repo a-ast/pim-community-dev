@@ -6,13 +6,13 @@ use Akeneo\Component\Classification\Model\CategoryInterface as BaseCategoryInter
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Pim\Component\Catalog\AttributeTypes;
-use Pim\Component\Catalog\Event\ChangeFamilyEvent;
-use Pim\Component\Catalog\Event\ClassifyEvent;
-use Pim\Component\Catalog\Event\DefineFamilyEvent;
+use Pim\Component\Catalog\Event\ChangedFamilyEvent;
+use Pim\Component\Catalog\Event\ClassifiedEvent;
+use Pim\Component\Catalog\Event\DefinedFamilyEvent;
 use Pim\Component\Catalog\Event\DisabledEvent;
 use Pim\Component\Catalog\Event\EnabledEvent;
-use Pim\Component\Catalog\Event\FulfilledValueEvent;
-use Pim\Component\Catalog\Event\UnclassifyEvent;
+use Pim\Component\Catalog\Event\FulfilledExistingValueEvent;
+use Pim\Component\Catalog\Event\UnclassifiedEvent;
 
 /**
  * Abstract product
@@ -200,9 +200,6 @@ abstract class AbstractProduct implements ProductInterface
     public function addValue(ValueInterface $value)
     {
         $this->values->add($value);
-        if ($this->getId()) {
-            $this->registerEvent(new FulfilledValueEvent($this->getId(), $value));
-        }
 
         return $this;
     }
@@ -274,9 +271,9 @@ abstract class AbstractProduct implements ProductInterface
     {
         if (null !== $family) {
             $this->familyId = $family->getId();
-            $this->registerEvent(new ChangeFamilyEvent($this->getId(), $family));
+            $this->registerEvent(new ChangedFamilyEvent($this->getId(), $family));
         } else {
-            $this->registerEvent(new DefineFamilyEvent($this->getId(), $family));
+            $this->registerEvent(new DefinedFamilyEvent($this->getId(), $family));
         }
         $this->family = $family;
 
@@ -422,10 +419,7 @@ abstract class AbstractProduct implements ProductInterface
      */
     public function addCategory(BaseCategoryInterface $category)
     {
-        if (!$this->categories->contains($category)) {
-            $this->categories->add($category);
-            $this->registerEvent(new ClassifyEvent($this->getId(), $category));
-        }
+        $this->categories->add($category);
 
         return $this;
     }
@@ -437,7 +431,6 @@ abstract class AbstractProduct implements ProductInterface
     {
         if ($this->categories->contains($category)) {
             $this->categories->removeElement($category);
-            $this->registerEvent(new UnclassifyEvent($this->getId(), $category));
         }
 
         return $this;
@@ -484,11 +477,14 @@ abstract class AbstractProduct implements ProductInterface
      */
     public function setEnabled($enabled)
     {
+        $toChange = $enabled != $this->enabled;
         $this->enabled = $enabled;
-        if ($this->enabled) {
-            $this->registerEvent(new EnabledEvent($this->getId()));
-        } else {
-            $this->registerEvent(new DisabledEvent($this->getId()));
+        if ($toChange) {
+            if ($this->enabled) {
+                $this->registerEvent(new EnabledEvent($this->getId()));
+            } else {
+                $this->registerEvent(new DisabledEvent($this->getId()));
+            }
         }
 
         return $this;

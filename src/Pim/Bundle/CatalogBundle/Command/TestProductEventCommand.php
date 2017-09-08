@@ -74,9 +74,18 @@ class TestProductEventCommand extends ContainerAwareCommand
         }
 
 
+        // issues / questions:
+        // - collect all the domain events, inside the product model is the ideal place for this
+        // - however, we want to collect only the events representing the user intent, sadly we need to be closer to
+        //   updater, etc internal api because of our anemic models and the use of setters, the real intent may be
+        //   already lost in the model. for instance, when a product is classified in 3 categories and i unclassify it
+        //   from one, our setter start to unclassify from all category before to classify in in 2 and we get 5 domain
+        //   events even if the only intent of the user was to unclassify from a single category
+        // - does the event should contains models like, Product, Family, etc or only codes (could be uuid later)?
+
         var_dump($product->getRawValues());
         var_dump($product->getFamily()->getCode());
-
+        var_dump($product->getCategoryCodes());
 
         $updates = [
             'family' => 'pc_monitors',
@@ -89,7 +98,19 @@ class TestProductEventCommand extends ContainerAwareCommand
                         'locale' => null,
                         'scope' => null
                     ]
-                ]
+                ],
+                'description' => [
+                    [
+                        'data' => 'new desc',
+                        'locale' => 'de_DE',
+                        'scope' => 'ecommerce'
+                    ],
+                    [
+                        'data' => 'updated desc',
+                        'locale' => 'de_DE',
+                        'scope' => 'mobile'
+                    ]
+                ],
             ]
         ];
         $updater = $this->getProductUpdater();
