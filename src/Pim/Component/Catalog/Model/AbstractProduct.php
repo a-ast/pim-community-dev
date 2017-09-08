@@ -9,6 +9,8 @@ use Pim\Component\Catalog\AttributeTypes;
 use Pim\Component\Catalog\Event\ChangeFamilyEvent;
 use Pim\Component\Catalog\Event\ClassifyEvent;
 use Pim\Component\Catalog\Event\DefineFamilyEvent;
+use Pim\Component\Catalog\Event\DisabledEvent;
+use Pim\Component\Catalog\Event\EnabledEvent;
 use Pim\Component\Catalog\Event\FulfilledValueEvent;
 use Pim\Component\Catalog\Event\UnclassifyEvent;
 
@@ -483,6 +485,11 @@ abstract class AbstractProduct implements ProductInterface
     public function setEnabled($enabled)
     {
         $this->enabled = $enabled;
+        if ($this->enabled) {
+            $this->registerEvent(new EnabledEvent($this->getId()));
+        } else {
+            $this->registerEvent(new DisabledEvent($this->getId()));
+        }
 
         return $this;
     }

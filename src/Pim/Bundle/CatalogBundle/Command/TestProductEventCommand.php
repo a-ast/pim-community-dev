@@ -81,6 +81,7 @@ class TestProductEventCommand extends ContainerAwareCommand
         $updates = [
             'family' => 'pc_monitors',
             'categories' => ['pc_monitors', 'clothes'],
+            'enabled' => false,
             'values' => [
                 'name' => [
                     [
