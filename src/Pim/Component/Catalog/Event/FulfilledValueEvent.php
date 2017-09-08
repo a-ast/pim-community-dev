@@ -2,20 +2,18 @@
 
 namespace Pim\Component\Catalog\Event;
 
-use Pim\Component\Catalog\Model\ProductInterface;
-use Pim\Component\Catalog\Model\ProductValueInterface;
-use Ramsey\Uuid\UuidInterface;
+use Pim\Component\Catalog\Model\ValueInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 class FulfilledValueEvent extends Event
 {
-    /** @var string */
+    /** @var int */
     private $productId;
 
-    /** @var ProductValueInterface */
+    /** @var ValueInterface */
     private $value;
 
-    public function __construct(string $productId, ProductValueInterface $value)
+    public function __construct(int $productId, ValueInterface $value)
     {
         $this->productId = $productId;
         $this->value = $value;

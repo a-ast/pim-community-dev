@@ -6,6 +6,11 @@ use Akeneo\Component\Classification\Model\CategoryInterface as BaseCategoryInter
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Pim\Component\Catalog\AttributeTypes;
+use Pim\Component\Catalog\Event\ChangeFamilyEvent;
+use Pim\Component\Catalog\Event\ClassifyEvent;
+use Pim\Component\Catalog\Event\DefineFamilyEvent;
+use Pim\Component\Catalog\Event\FulfilledValueEvent;
+use Pim\Component\Catalog\Event\UnclassifyEvent;
 
 /**
  * Abstract product
@@ -193,6 +198,9 @@ abstract class AbstractProduct implements ProductInterface
     public function addValue(ValueInterface $value)
     {
         $this->values->add($value);
+        if ($this->getId()) {
+            $this->registerEvent(new FulfilledValueEvent($this->getId(), $value));
+        }
 
         return $this;
     }
@@ -264,6 +272,9 @@ abstract class AbstractProduct implements ProductInterface
     {
         if (null !== $family) {
             $this->familyId = $family->getId();
+            $this->registerEvent(new ChangeFamilyEvent($this->getId(), $family));
+        } else {
+            $this->registerEvent(new DefineFamilyEvent($this->getId(), $family));
         }
         $this->family = $family;
 
@@ -411,6 +422,7 @@ abstract class AbstractProduct implements ProductInterface
     {
         if (!$this->categories->contains($category)) {
             $this->categories->add($category);
+            $this->registerEvent(new ClassifyEvent($this->getId(), $category));
         }
 
         return $this;
@@ -421,7 +433,10 @@ abstract class AbstractProduct implements ProductInterface
      */
     public function removeCategory(BaseCategoryInterface $category)
     {
-        $this->categories->removeElement($category);
+        if ($this->categories->contains($category)) {
+            $this->categories->removeElement($category);
+            $this->registerEvent(new UnclassifyEvent($this->getId(), $category));
+        }
 
         return $this;
     }
